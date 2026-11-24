@@ -480,6 +480,7 @@ document.addEventListener('click', ev => {
 const dlg = $('#settings');
 $('#btn-settings').addEventListener('click', () => {
   $('#set-name').value = settings.name || '';
+  $('#set-daily').checked = settings.daily !== false;
   $('#set-systems').value = settings.systems;
   $('#data-count').textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} saved in this browser.`;
   dlg.showModal();
@@ -534,6 +535,90 @@ $('#import-json').addEventListener('change', async ev => {
   } catch { toast('That file is not a shift log backup'); }
 });
 
+/* ---------- message of the day ---------- */
+const MESSAGES = [
+  'Every fault you log today is a lesson someone else won\'t have to learn the hard way.',
+  'Calm is a skill. Practise it on the quiet shifts so it\'s there on the busy ones.',
+  'The best handover is the one where nobody has to ring you afterwards.',
+  'Good engineers fix problems. Great ones write down how they did it.',
+  'Small checks, done properly, keep big things from going wrong.',
+  'You don\'t have to know everything. You just have to know where to look and who to ask.',
+  'Somewhere up there, a pilot is trusting kit you looked after today.',
+  'Slow is smooth, and smooth is fast.',
+  'Curiosity is the most useful tool in the toolbox.',
+  'A clear note now saves an hour of head-scratching later.',
+  'Progress isn\'t always loud. Sometimes it\'s just one more thing you understand today.',
+  'Ask the question. Someone else on shift is probably wondering the same thing.',
+  'Leave every system, and every logbook, a little better than you found it.',
+  'Confidence comes from preparation. Preparation comes from today.',
+  'Nobody notices when everything just works, and that\'s the whole point.',
+  'The fault that\'s hardest to find teaches you the most.',
+  'Look after the basics and the basics will look after you.',
+  'Every expert on the team was once the trainee asking "why?".',
+  'Trust the procedure, but understand the reason behind it.',
+  'A good shift is not one with no problems. It\'s one where problems are handled well.',
+  'Take the extra minute. It\'s nearly always worth it.',
+  'Your future self will thank you for today\'s tidy notes.',
+  'Be the engineer you\'d want on the other end of the phone at 3 a.m.',
+  'One step at a time still gets you all the way there.',
+  'Stay curious, stay careful, stay kind.',
+  'Every system has a story. Read the logs.',
+  'Today is a good day to learn something you\'ve been putting off.',
+  'Steady hands, clear head, good coffee.',
+  'Quiet competence is still competence.',
+  'Mistakes are data. Log them, learn from them, move on.',
+  'Teamwork is just good communication, repeated.',
+  'Find the root cause, not just the quickest fix.',
+  'You are building experience that no textbook can give you.',
+  'Done properly beats done quickly.',
+  'If something doesn\'t look right, it\'s worth a second look.',
+  'Your attention to detail keeps the sky running smoothly.',
+  'Share what you know. It makes the whole team stronger.',
+  'Hard days build the skills that make the easy days easy.',
+  'There\'s no such thing as a silly question when safety is involved.',
+  'Be patient with the kit, with your colleagues and with yourself.',
+  'Every day on shift is a day closer to where you\'re heading.',
+  'Write it down. Memory is great, but the log is better.',
+  'A fresh pair of eyes is sometimes the best test equipment.',
+  'Reliability isn\'t luck. It\'s a lot of people doing their jobs well.',
+  'Pride in the small jobs leads to trust on the big ones.',
+  'Take a breath, check the facts, then act.',
+  'Make today\'s handover one you\'d be happy to receive.',
+  'The work you do quietly makes everything else possible.',
+  'Learning never goes out of service.',
+  'Back yourself. You know more than you did yesterday.',
+  'Good habits are the best safety system there is.',
+  'Plan the work, then work the plan.',
+  'Notice what went well today too, not just what went wrong.',
+  'Keep going. The skills are adding up even when it doesn\'t feel like it.',
+  'Clear communication is half of every fix.',
+  'A well-kept log is a gift to the next shift.',
+  'Ownership means finishing the job, including the paperwork.',
+  'Be curious about the "why", careful about the "how".',
+  'Today you get to keep things running safely. That\'s worth being proud of.',
+  'Have a good shift. You\'ve got this.'
+];
+
+function dailyMessage(d = new Date()) {
+  const dayNum = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+  return MESSAGES[dayNum % MESSAGES.length];
+}
+function showDaily() {
+  const d = new Date(), dlg = $('#daily');
+  $('#daily-date').textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  $('#daily-text').textContent = dailyMessage(d);
+  if (!dlg.open) dlg.showModal();
+}
+function maybeShowDaily() {
+  if (settings.daily === false) return;
+  const today = dayKey(new Date());
+  if (settings.lastDaily === today) return;
+  settings.lastDaily = today; saveSettings();
+  showDaily();
+}
+$('#show-daily').addEventListener('click', () => { dlg.close(); showDaily(); });
+$('#set-daily').addEventListener('change', ev => { settings.daily = ev.target.checked; saveSettings(); });
+
 /* ---------- clock, sync, start ---------- */
 function tick() {
   const d = new Date();
@@ -542,7 +627,7 @@ function tick() {
 let lastMinute = -1;
 setInterval(() => {
   const m = new Date().getMinutes(); if (m === lastMinute) return; lastMinute = m;
-  tick(); renderSummary(); syncForm('tech');
+  tick(); renderSummary(); syncForm('tech'); maybeShowDaily();
   if (!filters.tech.q) renderLog('tech');
 }, 5000);
 
@@ -554,4 +639,5 @@ tick();
 resetForm('admin'); resetForm('tech');
 setTab(settings.tab === 'tech' ? 'tech' : 'admin');
 renderAll();
+maybeShowDaily();
 })();

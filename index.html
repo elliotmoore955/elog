@@ -200,6 +200,9 @@
 
     <label>Default “logged by” name<input id="set-name" type="text"></label>
 
+    <label class="check"><input type="checkbox" id="set-daily"> Show a message of the day when the app first opens each day</label>
+    <div class="row"><button type="button" class="ghost" id="show-daily">Show today's message</button></div>
+
     <label>Systems list
       <textarea id="set-systems" rows="14" spellcheck="false"></textarea>
     </label>
@@ -217,6 +220,16 @@
       <label class="ghost filebtn">Import backup<input type="file" id="import-json" accept="application/json,.json"></label>
     </div>
     <p class="hint" id="data-count"></p>
+  </form>
+</dialog>
+
+<!-- ===================== DAILY MESSAGE ===================== -->
+<dialog id="daily" aria-labelledby="daily-title">
+  <form method="dialog" class="daily">
+    <p class="daily-date" id="daily-date"></p>
+    <h2 id="daily-title" class="daily-kicker">Today's message</h2>
+    <blockquote id="daily-text"></blockquote>
+    <button class="primary" value="ok" autofocus>Start the shift</button>
   </form>
 </dialog>
 

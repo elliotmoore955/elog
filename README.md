@@ -10,6 +10,8 @@ A simple browser app for logging admin, faults and maintenance during a shift.
 
 On every entry you can use **Now** or **Set time** to enter when it happened.
 
+The first time the app is opened each day, a **message of the day** pops up with a different encouraging message each day. You can turn it off or show it again under Settings & data.
+
 The status strip at the top shows keys currently out, open faults, and maintenance in progress or due in the next 24 hours.
 
 ## Using it
