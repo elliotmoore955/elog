@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engineering Shift Log</title>
+<meta name="theme-color" content="#17212b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317212b'/%3E%3Cpath d='M9 9h14M9 16h14M9 23h9' stroke='%23f2c200' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <h1>Engineering Shift Log</h1>
+      <p id="clock" class="clock" aria-live="off"></p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Log sections">
+      <button role="tab" id="tab-admin" aria-controls="panel-admin" aria-selected="true" data-tab="admin">Admin</button>
+      <button role="tab" id="tab-tech" aria-controls="panel-tech" aria-selected="false" data-tab="tech">Faults &amp; maintenance</button>
+    </nav>
+    <div class="top-actions">
+      <button class="ghost" id="btn-settings" type="button">Settings &amp; data</button>
+    </div>
+  </div>
+</header>
+
+<section class="status band" aria-label="Current status">
+  <div class="status-card" id="sum-keys"><h2>Keys out</h2><div class="sum-body"></div></div>
+  <div class="status-card" id="sum-faults"><h2>Open faults</h2><div class="sum-body"></div></div>
+  <div class="status-card" id="sum-maint"><h2>Maintenance</h2><div class="sum-body"></div></div>
+</section>
+
+<main class="band">
+
+  <!-- ===================== ADMIN ===================== -->
+  <section id="panel-admin" role="tabpanel" aria-labelledby="tab-admin" class="panel">
+    <form id="form-admin" class="entry-form" novalidate autocomplete="off">
+      <div class="form-head">
+        <h2 data-title>New admin entry</h2>
+        <button type="button" class="link" data-cancel hidden>Cancel edit</button>
+      </div>
+
+      <fieldset class="seg" aria-label="Entry type">
+        <legend>Type</legend>
+        <label><input type="radio" name="type" value="handover" checked><span>Shift handover</span></label>
+        <label><input type="radio" name="type" value="key-out"><span>Key out</span></label>
+        <label><input type="radio" name="type" value="key-in"><span>Key in</span></label>
+        <label><input type="radio" name="type" value="info"><span>Info</span></label>
+        <label><input type="radio" name="type" value="event"><span>Event</span></label>
+      </fieldset>
+
+      <div class="when">
+        <span class="lbl">Time</span>
+        <div class="seg small">
+          <label><input type="radio" name="whenMode" value="now" checked><span>Now</span></label>
+          <label><input type="radio" name="whenMode" value="set"><span>Set time</span></label>
+        </div>
+        <input type="datetime-local" name="when" aria-label="Date and time" hidden>
+      </div>
+
+      <div class="grid2" data-types="handover">
+        <label>Outgoing engineer<input name="outgoing" type="text"></label>
+        <label>Incoming engineer<input name="incoming" type="text"></label>
+      </div>
+
+      <div class="grid2" data-types="key-out key-in">
+        <label>Key / key set<input name="key" type="text" list="key-list" placeholder="e.g. Radar site gate"></label>
+        <label><span data-keylabel>Issued to</span><input name="keyHolder" type="text" placeholder="Name"></label>
+      </div>
+      <datalist id="key-list"></datalist>
+
+      <label data-types="info event">Summary<input name="summary" type="text" placeholder="One line"></label>
+
+      <label>Notes<textarea name="notes" rows="4" data-ph-handover="Ongoing faults, work in progress, anything to watch this shift"></textarea></label>
+
+      <label>Logged by<input name="loggedBy" type="text" placeholder="Your name"></label>
+
+      <p class="form-error" role="alert" hidden></p>
+      <button class="primary" type="submit" data-submit>Log entry</button>
+    </form>
+
+    <div class="log">
+      <div class="filters">
+        <input type="search" data-f="q" placeholder="Search admin log" aria-label="Search admin log">
+        <select data-f="type" aria-label="Filter by type">
+          <option value="">All types</option>
+          <option value="handover">Shift handovers</option>
+          <option value="key-out">Keys out</option>
+          <option value="key-in">Keys in</option>
+          <option value="info">Info</option>
+          <option value="event">Events</option>
+        </select>
+      </div>
+      <div class="entries" data-list></div>
+    </div>
+  </section>
+
+  <!-- ===================== FAULTS & MAINTENANCE ===================== -->
+  <section id="panel-tech" role="tabpanel" aria-labelledby="tab-tech" class="panel" hidden>
+    <form id="form-tech" class="entry-form" novalidate autocomplete="off">
+      <div class="form-head">
+        <h2 data-title>New fault / maintenance entry</h2>
+        <button type="button" class="link" data-cancel hidden>Cancel edit</button>
+      </div>
+
+      <fieldset class="seg" aria-label="Entry type">
+        <legend>Type</legend>
+        <label><input type="radio" name="type" value="fault" checked><span>Fault</span></label>
+        <label><input type="radio" name="type" value="maintenance"><span>Maintenance</span></label>
+        <label><input type="radio" name="type" value="info"><span>Info</span></label>
+        <label><input type="radio" name="type" value="event"><span>Event</span></label>
+      </fieldset>
+
+      <label>System<select name="system"></select></label>
+      <label data-other hidden>Other system<input name="systemOther" type="text" placeholder="Name of system"></label>
+
+      <div class="when">
+        <span class="lbl" data-whenlabel>Time</span>
+        <div class="seg small">
+          <label><input type="radio" name="whenMode" value="now" checked><span>Now</span></label>
+          <label><input type="radio" name="whenMode" value="set"><span>Set time</span></label>
+        </div>
+        <input type="datetime-local" name="when" aria-label="Date and time" hidden>
+      </div>
+
+      <div data-types="maintenance" class="duration">
+        <label>Duration
+          <select name="duration">
+            <option value="15">15 min</option>
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60" selected>1 hour</option>
+            <option value="90">1 h 30</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+            <option value="240">4 hours</option>
+            <option value="360">6 hours</option>
+            <option value="480">8 hours</option>
+            <option value="720">12 hours</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </label>
+        <div class="grid2" data-custom-dur hidden>
+          <label>Hours<input name="durH" type="number" min="0" max="168" value="0" inputmode="numeric"></label>
+          <label>Minutes<input name="durM" type="number" min="0" max="59" step="5" value="0" inputmode="numeric"></label>
+        </div>
+        <p class="hint" data-ends></p>
+        <label class="check"><input type="checkbox" name="offline"> System out of service during work</label>
+      </div>
+
+      <div class="grid2" data-types="fault">
+        <label>Severity
+          <select name="severity">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </label>
+        <label>Status
+          <select name="status">
+            <option value="open" selected>Open</option>
+            <option value="closed">Cleared</option>
+          </select>
+        </label>
+      </div>
+
+      <label>Summary<input name="summary" type="text" placeholder="What happened / what's being done"></label>
+      <label data-types="fault maintenance">Reference<input name="ref" type="text" placeholder="Fault no. / work order (optional)"></label>
+      <label>Notes<textarea name="notes" rows="4"></textarea></label>
+      <label>Logged by<input name="loggedBy" type="text" placeholder="Your name"></label>
+
+      <p class="form-error" role="alert" hidden></p>
+      <button class="primary" type="submit" data-submit>Log entry</button>
+    </form>
+
+    <div class="log">
+      <div class="filters">
+        <input type="search" data-f="q" placeholder="Search faults &amp; maintenance" aria-label="Search faults and maintenance">
+        <select data-f="system" aria-label="Filter by system"><option value="">All systems</option></select>
+        <select data-f="type" aria-label="Filter by type">
+          <option value="">All types</option>
+          <option value="fault">Faults</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="info">Info</option>
+          <option value="event">Events</option>
+        </select>
+        <label class="check"><input type="checkbox" data-f="open"> Open faults only</label>
+      </div>
+      <div class="entries" data-list></div>
+    </div>
+  </section>
+</main>
+
+<!-- ===================== SETTINGS ===================== -->
+<dialog id="settings">
+  <form method="dialog" class="settings-form">
+    <div class="form-head"><h2>Settings &amp; data</h2><button class="link" value="close">Close</button></div>
+
+    <label>Default “logged by” name<input id="set-name" type="text"></label>
+
+    <label>Systems list
+      <textarea id="set-systems" rows="14" spellcheck="false"></textarea>
+    </label>
+    <p class="hint">One system per line. Start a line with # to make a group heading.</p>
+    <div class="row">
+      <button type="button" class="primary" id="save-settings">Save settings</button>
+      <button type="button" class="ghost" id="reset-systems">Restore default systems</button>
+    </div>
+
+    <h3>Your data</h3>
+    <p class="hint">Entries are saved in this browser only. Export a backup regularly, and import it to move the log to another computer.</p>
+    <div class="row">
+      <button type="button" class="ghost" id="export-csv">Export CSV</button>
+      <button type="button" class="ghost" id="export-json">Download backup (JSON)</button>
+      <label class="ghost filebtn">Import backup<input type="file" id="import-json" accept="application/json,.json"></label>
+    </div>
+    <p class="hint" id="data-count"></p>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
